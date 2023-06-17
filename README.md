@@ -28,6 +28,10 @@ python app.py --admin_key password
 
 - http://您的ip地址:5005/
 
+### 我部署的例子（小霸王环境，请怜惜）
+
+- https://2504.qiangtu.com:8087/
+
 ----
 
 ### API 说明
@@ -120,6 +124,10 @@ python app.py --admin_key password
 ### Access
 
 - http://your-ip-address:5005/
+
+### The example I deployed (a fragile environment, please be kind).
+
+- https://2504.qiangtu.com:8087/
 
 ----
 
