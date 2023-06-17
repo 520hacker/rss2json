@@ -13,7 +13,7 @@ PS:本程序主要代码由GPT创建, 有bug是正常的，反馈请联系https:
 要一次性安装所有依赖项，您可以使用以下命令：
 
 ```bash
-pip install os json sqlite3 threading time feedparser calendar argparse requests flask
+pip install feedparser argparse requests flask
 ```
 
 这将安装所有列出的依赖项，包括`os`、`json`、`sqlite3`、`threading`、`time`、`feedparser`、`calendar`、`argparse`、`requests`和`flask`。
