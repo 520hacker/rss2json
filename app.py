@@ -175,6 +175,17 @@ def periodic_task():
 thread = threading.Thread(target=periodic_task)
 thread.start()
 
+@app.after_request
+def add_cors_headers(response):
+    try:
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'access-control-allow-origin')
+    except Exception as e:
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        print('add_cors_headers return error')
+        pass
+    return response
+
 # API: /rss
 @app.route('/rss', methods=['GET'])
 def get_rss():
