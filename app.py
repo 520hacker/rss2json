@@ -114,26 +114,25 @@ def process_rss(url, rss):
         if response.status_code == 200:
             rss_content = response.text
             rss_feed = feedparser.parse(rss_content)
-            # print(rss_feed[0]) 
 
             # 获取 channel 的信息
             channel = rss_feed['feed']
             title = channel['title']
-            # print(title)
             link = channel['link']
-            # print(link)
             description = channel['description']
-            # print(description)
             pubDate = channel['published'] 
-            # print(pubDate)
             save_source_to_db(url, link, title, description, get_timestamp(pubDate))
-
             for entry in rss_feed.entries:
                 link = entry.get('link', '')
                 title = entry.get('title', '')
                 description = entry.get('description', '')
                 pubDate = entry.get('published', '')
-                enclosure = entry.get('enclosure', '')
+                enclosure = ''
+                try:
+                    filtered_links = [item for item in entry.links if item.get('type') != 'text/html']
+                    enclosure = json.dumps(filtered_links)
+                except Exception as ex:
+                    pass
                 pubDate_timestamp = get_timestamp(pubDate)
                 save_rss_to_db(link, url, title, description, pubDate_timestamp, enclosure)
 
