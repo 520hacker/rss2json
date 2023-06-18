@@ -202,14 +202,54 @@ def get_rss():
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', 50))
     search = request.args.get('search', '')
+    source = request.args.get('source', '')  # 修改此处的参数名
 
     conn = sqlite3.connect('rss.db')
     c = conn.cursor()
-    c.execute("SELECT COUNT(*) FROM rss")
+
+    # 构建 SQL 查询语句
+    sql = "SELECT COUNT(*) FROM rss"
+    if search:
+        sql += " WHERE title LIKE ? OR description LIKE ?"
+    if source:
+        if search:
+            sql += " AND source = ?"
+        else:
+            sql += " WHERE source = ?"
+
+    # 执行查询
+    if search and source:
+        c.execute(sql, (f"%{search}%", f"%{search}%", source))
+    elif search:
+        c.execute(sql, (f"%{search}%", f"%{search}%"))
+    elif source:
+        c.execute(sql, (source,))
+    else:
+        c.execute(sql)
+
     total_count = c.fetchone()[0]
 
-    c.execute("SELECT * FROM rss WHERE title LIKE ? OR description LIKE ? ORDER BY pubDate DESC",
-              (f"%{search}%", f"%{search}%"))
+    # 构建 SQL 查询语句
+    sql = "SELECT * FROM rss"
+    if search:
+        sql += " WHERE title LIKE ? OR description LIKE ?"
+    if source:
+        if search:
+            sql += " AND source = ?"
+        else:
+            sql += " WHERE source = ?"
+    sql += " ORDER BY pubDate DESC"
+
+    # 执行查询
+    if search and source:
+        c.execute(sql, (f"%{search}%", f"%{search}%", source))
+    elif search:
+        c.execute(sql, (f"%{search}%", f"%{search}%"))
+    elif source:
+        c.execute(sql, (source,))
+    else:
+        c.execute(sql)
+
     rss_entries = c.fetchall()
 
     rss_list = []
