@@ -53,6 +53,7 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS source
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                  rss TEXT UNIQUE,
+                 avatar TEXT,
                  link TEXT,
                  title TEXT,
                  description TEXT,
@@ -85,18 +86,24 @@ def save_rss_to_db(link, source, title, description, pubDate, enclosure):
     conn.close()
 
 # 保存已遍历的RSS地址到数据库
-def save_source_to_db(rss, link, title, description, pubDate):
+def save_source_to_db(rss, avatar, link, title, description, pubDate):
     conn = sqlite3.connect('rss.db')
     c = conn.cursor()
     c.execute("SELECT * FROM source WHERE rss=?", (rss,))
     existing_entry = c.fetchone()
     if existing_entry:
+        if avatar:
+            # 如果avatar传了值，则即使已经有相同的rss值的情况下，也需要检查avatar值是否需要更新
+            if existing_entry[1] != avatar:
+                # 如果avatar值需要更新，则更新
+                c.execute("UPDATE source SET avatar=? WHERE rss=?", (avatar, rss))
+    else:
         # 如果已经存在相同的link值，则不进行插入操作
-        return
-    c.execute("INSERT INTO source (rss, link, title, description, pubDate) VALUES (?, ?, ?, ?, ?)",
-              (rss, link, title, description, pubDate))
+        c.execute("INSERT INTO source (rss, avatar, link, title, description, pubDate) VALUES (?, ?, ?, ?, ?, ?)",
+                  (rss, avatar, link, title, description, pubDate))
     conn.commit()
     conn.close()
+
 
 
 # 保存日志到数据库
@@ -108,7 +115,7 @@ def save_log_to_db(time, result):
     conn.close()
 
 # 处理单个RSS地址的请求
-def process_rss(url, rss):
+def process_rss(url, rss_item):
     try:
         response = requests.get(url)
         if response.status_code == 200:
@@ -116,23 +123,26 @@ def process_rss(url, rss):
             rss_feed = feedparser.parse(rss_content)
 
             # 获取 channel 的信息
+            avatar = rss_item['avatar']
             channel = rss_feed['feed']
             title = channel['title']
             link = channel['link']
             description = channel['description']
             pubDate = channel['published'] 
-            save_source_to_db(url, link, title, description, get_timestamp(pubDate))
+            save_source_to_db(url, avatar, link, title, description, get_timestamp(pubDate))
             for entry in rss_feed.entries:
                 link = entry.get('link', '')
                 title = entry.get('title', '')
                 description = entry.get('description', '')
                 pubDate = entry.get('published', '')
                 enclosure = ''
+
                 try:
                     filtered_links = [item for item in entry.links if item.get('type') != 'text/html']
                     enclosure = json.dumps(filtered_links)
                 except Exception as ex:
                     pass
+
                 pubDate_timestamp = get_timestamp(pubDate)
                 save_rss_to_db(link, url, title, description, pubDate_timestamp, enclosure)
 
@@ -149,9 +159,9 @@ def process_rss(url, rss):
 def process_all_rss():
     rss_list = read_rss_list()
     threads = []
-    for rss in rss_list:
-        url = rss
-        t = threading.Thread(target=process_rss, args=(url, rss,))
+    for rss_item in rss_list:
+        url = rss_item['rss']
+        t = threading.Thread(target=process_rss, args=(url, rss_item,))
         threads.append(t)
         t.start()
     for t in threads:
@@ -258,6 +268,10 @@ def get_author():
 # API: /new
 @app.route('/new', methods=['GET'])
 def add_rss():
+    avatar = ''
+    if request.args.get('avatar', ''):
+        avatar = request.args.get('avatar', '')
+
     url = request.args.get('url', '')
     if not url:
         return jsonify({'error': 'URL parameter is missing'})
@@ -267,15 +281,27 @@ def add_rss():
         return jsonify({'error': 'Invalid key'})
 
     rss_list = read_rss_list()
-    rss_exist = any(rss == url for rss in rss_list)
+    rss_exist = any(rss_item['rss'] == url for rss_item in rss_list)
+    
     if rss_exist:
-        return jsonify({'error': 'RSS address already exists'})
+        if avatar:
+            for rss_item in rss_list:
+                if rss_item['rss'] == url:
+                    rss_item['avatar'] = avatar
+                    break
+        else:
+            return jsonify({'error': 'RSS address already exists'})
+    else:
+        new_record = {
+            "rss": url,
+            "avatar": avatar
+        }
+        rss_list.append(new_record)
 
-    rss_list.append(url)
     with open('rss.json', 'w') as file:
         json.dump(rss_list, file)
 
-    process_rss(url,"")
+    process_rss(url, new_record)
     return jsonify({'success': 'RSS address added successfully'})
 
 
@@ -295,14 +321,14 @@ def remove_rss():
         return jsonify({'error': 'Invalid key'})
 
     rss_list = read_rss_list()
-    rss_not_exist = all(rss != url for rss in rss_list)
+    rss_not_exist = all(rss_item['rss'] != url for rss_item in rss_list)
     if rss_not_exist:
         return jsonify({'error': 'RSS address does not exist'})
 
     if len(rss_list) == 1:
         return jsonify({'error': 'Only 1 RSS address left'})
 
-    rss_list = [rss for rss in rss_list if rss != url]
+    rss_list = [rss_item for rss_item in rss_list if rss_item['rss'] != url]
     with open('rss.json', 'w') as file:
         json.dump(rss_list, file)
 

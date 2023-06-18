@@ -1,1 +1,10 @@
-["https://memos.qiangtu.com/u/1/rss.xml"]
+[
+    {
+        "rss": "https://memos.qiangtu.com/u/1/rss.xml",
+        "avatar": "https://memos2504.oss-cn-hangzhou.aliyuncs.com/memos2504/assets/2023/06/06/1686021093_favicon.ico/1ef33f96-5296-4d5e-940c-04c88775d008.ico"
+    },
+    {
+        "rss": "https://me.edui.fun/u/101/rss.xml",
+        "avatar": "https://cravatar.cn/avatar/ba83fa02fc4b2ba621514941307e21be"
+    }
+]
