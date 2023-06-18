@@ -39,12 +39,6 @@ class RSSDatabase:
                      description TEXT,
                      pubDate INTEGER)"""
         )
-        self.c.execute(
-            """CREATE TABLE IF NOT EXISTS log
-                     (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                     time TEXT,
-                     result TEXT)"""
-        )
         self.conn.commit()
 
     def save_rss_to_db(self, link, author, source, title, description, pubDate, enclosure):
@@ -54,7 +48,7 @@ class RSSDatabase:
         if existing_entry:
             return
         self.c.execute(
-            "INSERT INTO rss (link, author, source, title, description, pubDate, enclosure) VALUES (?,?, ?, ?, ?, ?, ?)",
+            "INSERT INTO rss (link, author, source, title, description, pubDate, enclosure) VALUES (?, ?, ?, ?, ?, ?, ?)",
             (link, author, source, title, description, pubDate, enclosure),
         )
         self.conn.commit()
@@ -68,7 +62,7 @@ class RSSDatabase:
                 self.c.execute("UPDATE source SET avatar=? WHERE rss=?", (avatar, rss))
         else:
             self.c.execute(
-                "INSERT INTO source (rss, avatar, author,link, title, description, pubDate) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO source (rss, avatar, author, link, title, description, pubDate) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (rss, avatar, author, link, title, description, pubDate),
             )
         self.conn.commit()
@@ -159,27 +153,6 @@ class RSSDatabase:
         return rss_entries 
 
 
-    # def execount(self, sql, objs):
-    #     self.connect()
-    #     self.c.execute(sql, objs)
-    #     return self.c.fetchone()[0]
-
-    # def execount(self, sql):
-    #     self.connect()
-    #     self.c.execute(sql)
-    #     return self.c.fetchone()[0]
-
-    # def execute(self, sql, objs):
-    #     self.connect()
-    #     self.c.execute(sql, objs)
-    #     return self.c.fetchall()
-
-    # def execute(self, sql):
-    #     self.connect()
-    #     self.c.execute(sql)
-    #     return self.c.fetchall()
-
-
 def get_timestamp(pubDate):
     try:
         pubDate_time = time.strptime(pubDate, "%a, %d %b %Y %H:%M:%S %z")
@@ -193,3 +166,49 @@ def get_timestamp(pubDate):
 def get_current_timestamp():
     now = time.time()
     return int(now)
+
+
+class LogDatabase:
+    def __init__(self):
+        self.conn = None
+        self.c = None
+        self.connect()
+
+    def connect(self):
+        if not self.conn:
+            self.conn = sqlite3.connect("log.db")
+            self.c = self.conn.cursor()
+            self.create_table()
+
+    def create_table(self):
+        self.c.execute(
+            """CREATE TABLE IF NOT EXISTS log
+                     (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     time TEXT,
+                     result TEXT)"""
+        )
+        self.conn.commit()
+
+    def save_log_to_db(self, time, result):
+        self.connect()
+        self.c.execute("INSERT INTO log (time, result) VALUES (?, ?)", (time, result))
+        self.conn.commit()
+
+    def get_log_count_from_db(self):
+        self.connect()
+        self.c.execute("SELECT COUNT(*) FROM log")
+        return self.c.fetchone()[0]
+
+    def get_log_list_from_db(self, per_page, page):
+        self.connect()
+        self.c.execute(
+            "SELECT * FROM log ORDER BY id DESC LIMIT ? OFFSET ?",
+            (per_page, (page - 1) * per_page),
+        )
+        return self.c.fetchall()
+
+    def close(self):
+        if self.conn:
+            self.conn.close()
+            self.conn = None
+            self.c = None

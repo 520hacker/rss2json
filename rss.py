@@ -6,7 +6,7 @@ import feedparser
 
 # import markdown
 from flask import jsonify
-from rss_db import RSSDatabase, get_timestamp
+from rss_db import RSSDatabase, LogDatabase, get_timestamp
 
 
 def read_rss_list():
@@ -36,7 +36,7 @@ def fetch_json(url):
         if response.status_code == 200:
             data = response.json()
             # 收集需要的数据
-            result = [] 
+            result = []
             for item in data["data"]:
                 # 处理content字段，将Markdown转换为HTML
                 # content_html = markdown.markdown(item["content"])
@@ -68,7 +68,7 @@ def get_resource_json(item_url, base_url, feeds_json):
         for entry in feeds_json:
             new_url = base_url + "/m/" + str(entry["id"])
             if item_url == new_url:
-                images = entry["resourceList"] 
+                images = entry["resourceList"]
                 new_image_list = []
                 for image in json.loads(images):
                     new_image_list.append(
@@ -132,7 +132,7 @@ def process_rss(url, rss_item):
                 enclosure = ""
 
                 try:
-                    new_image_list = get_resource_json(link, channel_link, feeds_json) 
+                    new_image_list = get_resource_json(link, channel_link, feeds_json)
                     if isinstance(new_image_list, list) and len(new_image_list) > 0:
                         filtered_links = new_image_list
                     else:
@@ -151,26 +151,28 @@ def process_rss(url, rss_item):
                     link, url, author, title, description, pubDate_timestamp, enclosure
                 )
 
+            rss_db.close()
+            log_db = LogDatabase()
             print(f"Successfully processed RSS: {url}")
-            rss_db.save_log_to_db(
+            log_db.save_log_to_db(
                 time.strftime("%Y-%m-%d %H:%M:%S"), f"Successfully processed RSS: {url}"
             )
-            rss_db.close()
+            log_db.close()
 
         else:
-            rss_db = RSSDatabase()
-            rss_db.save_log_to_db(
+            log_db = LogDatabase()
+            log_db.save_log_to_db(
                 time.strftime("%Y-%m-%d %H:%M:%S"), f"Failed to connect to RSS: {url}"
             )
-            rss_db.close()
+            log_db.close()
 
             print(f"Failed to connect to RSS: {url}")
     except Exception as e:
-        rss_db = RSSDatabase()
-        rss_db.save_log_to_db(
+        log_db = LogDatabase()
+        log_db.save_log_to_db(
             time.strftime("%Y-%m-%d %H:%M:%S"), f"Error processing RSS: {url}, {str(e)}"
         )
-        rss_db.close()
+        log_db.close()
 
         print(f"Error processing RSS: {url}, {str(e)}")
 
@@ -326,10 +328,10 @@ def get_log(request):
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 50))
 
-    rss_db = RSSDatabase()
-    total_count = rss_db.get_log_count_from_db()
-    log_entries = rss_db.get_log_list_from_db(per_page, page)
-    rss_db.close()
+    log_db = LogDatabase()
+    total_count = log_db.get_log_count_from_db()
+    log_entries = log_db.get_log_list_from_db(per_page, page)
+    log_db.close()
 
     log_list = []
     for entry in log_entries:
