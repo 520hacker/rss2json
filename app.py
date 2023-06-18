@@ -250,10 +250,11 @@ def get_author():
     for entry in author_entries:
         author_list.append({
             'rss': entry[1],
-            'link': entry[2],
-            'title': entry[3],
-            'description': entry[4],
-            'pubDate': entry[5]
+            'avatar': entry[2],
+            'link': entry[3],
+            'title': entry[4],
+            'description': entry[5],
+            'pubDate': entry[6]
         })
 
     conn.close()
