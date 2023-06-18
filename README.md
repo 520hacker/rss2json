@@ -32,7 +32,7 @@ python app.py --admin_key password
 
 ### 我部署的例子（小霸王环境，请怜惜）
 
-- https://2504.qiangtu.com:8087/
+- https://rsssquare.qiangtu.com/api/rss
 
 ----
 
@@ -94,6 +94,18 @@ docker run -e ADMIN_KEY=<your_admin_key> -p 5005:5005 rss2json
     - 5005 (您的外部暴露端口):5005 ( 内部固定端口)
 - 启动容器
   - http://ip:5005/
+
+----
+
+### 最近更新
+
+2023/06/18 父亲节快乐
+
+- 发布了基础的py工程 
+
+- 把合体的工程分离了 
+- 按照林木木的建议，从MEMOS的API直接读取了更多的信息 
+- 分离了log.db - 继续更新了docker镜像
 
 ----
 
