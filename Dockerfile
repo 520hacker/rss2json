@@ -7,16 +7,16 @@ WORKDIR /build
 RUN pip install feedparser argparse requests flask
 
 # 复制代码和配置文件到容器
-COPY app.py .
-COPY rss.json .
+COPY *.py .
+COPY rss.json . 
 
 # 第二阶段：运行阶段
 FROM python:3.9-slim as runner
 
 WORKDIR /app
 
-# 从构建阶段复制所需的文件和依赖项
-COPY --from=builder /build/app.py .
+# 从构建阶段复制所需的文件和依赖项 
+COPY --from=builder /build/*.py .
 COPY --from=builder /build/rss.json .
 COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
 
