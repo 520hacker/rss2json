@@ -4,7 +4,7 @@ FROM python:3.9 as builder
 WORKDIR /build
 
 # 安装构建所需依赖项
-RUN pip install feedparser argparse requests flask
+RUN pip install feedparser argparse requests flask markdown
 
 # 复制代码和配置文件到容器
 COPY *.py .

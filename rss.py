@@ -1,9 +1,10 @@
 import json
 import requests
 import time
-
-# import threading
+import re
 import feedparser
+
+# import markdown
 from flask import jsonify
 from rss_db import RSSDatabase, get_timestamp
 
@@ -14,6 +15,78 @@ def read_rss_list():
     return rss_list
 
 
+def rss_to_memo_url(url):
+    # 匹配 {prefix}/u/{id}/rss.xml
+    pattern = r"^(.*)/u/(\d+)/rss\.xml$"
+    match = re.match(pattern, url)
+    if match:
+        prefix = match.group(1)
+        id = match.group(2)
+        # 构造 {prefix}/api/memo?creatorId={id}&rowStatus=NORMAL&limit=50
+        memo_url = f"{prefix}/api/memo?creatorId={id}&rowStatus=NORMAL&limit=50"
+        return memo_url
+    else:
+        return None
+
+
+def fetch_json(url):
+    try:
+        # 发起GET请求获取API接口返回的JSON数据
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            # 收集需要的数据
+            result = [] 
+            for item in data["data"]:
+                # 处理content字段，将Markdown转换为HTML
+                # content_html = markdown.markdown(item["content"])
+
+                # 处理resourceList字段，转换为JSON字符串
+                resource_list = json.dumps(item["resourceList"])
+
+                # 收集数据
+                result.append(
+                    {
+                        "id": item["id"],
+                        # "updatedTs": item["updatedTs"],
+                        # "content": content_html,
+                        "creatorName": item["creatorName"],
+                        "resourceList": resource_list,
+                    }
+                )
+            print(f"Successfully processed JSON API: {url}")
+            return result
+        return None
+    except Exception as ex:
+        print(f"格式化jsonfeeds发生了错误${ex}")
+        pass
+    return None
+
+
+def get_resource_json(item_url, base_url, feeds_json):
+    try:
+        for entry in feeds_json:
+            new_url = base_url + "/m/" + str(entry["id"])
+            if item_url == new_url:
+                images = entry["resourceList"] 
+                new_image_list = []
+                for image in json.loads(images):
+                    new_image_list.append(
+                        {"type": image["type"], "href": image["externalLink"]}
+                    )
+                return new_image_list
+        return []
+    except Exception as ex:
+        print(f"获取new_image_list发生了错误${ex}")
+        return []
+
+
+def get_author_json(feeds_json):
+    for entry in feeds_json:
+        return entry["creatorName"]
+    return ""
+
+
 def process_rss(url, rss_item):
     try:
         response = requests.get(url)
@@ -22,14 +95,33 @@ def process_rss(url, rss_item):
             rss_feed = feedparser.parse(rss_content)
 
             avatar = rss_item["avatar"]
+
+            feeds_url = ""
+            feeds_json = None
+
+            try:
+                if rss_item["type"] == "1":
+                    feeds_url = rss_to_memo_url(url)
+                    feeds_json = fetch_json(feeds_url)
+            except Exception as ex:
+                print(f"获取json feeds发生了错误${ex}")
+                pass
+
+            author = get_author_json(feeds_json)
             channel = rss_feed["feed"]
             title = channel["title"]
-            link = channel["link"]
+            channel_link = channel["link"]
             description = channel["description"]
             pubDate = channel["published"]
             rss_db = RSSDatabase()
             rss_db.save_source_to_db(
-                url, avatar, link, title, description, get_timestamp(pubDate)
+                url,
+                avatar,
+                author,
+                channel_link,
+                title,
+                description,
+                get_timestamp(pubDate),
             )
 
             for entry in rss_feed.entries:
@@ -40,16 +132,23 @@ def process_rss(url, rss_item):
                 enclosure = ""
 
                 try:
-                    filtered_links = [
-                        item for item in entry.links if item.get("type") != "text/html"
-                    ]
+                    new_image_list = get_resource_json(link, channel_link, feeds_json) 
+                    if isinstance(new_image_list, list) and len(new_image_list) > 0:
+                        filtered_links = new_image_list
+                    else:
+                        filtered_links = [
+                            item
+                            for item in entry.links
+                            if item.get("type") != "text/html"
+                        ]
                     enclosure = json.dumps(filtered_links)
                 except Exception as ex:
+                    print(f"格式化enclosure发生了错误${ex}")
                     pass
 
                 pubDate_timestamp = get_timestamp(pubDate)
                 rss_db.save_rss_to_db(
-                    link, url, title, description, pubDate_timestamp, enclosure
+                    link, url, author, title, description, pubDate_timestamp, enclosure
                 )
 
             print(f"Successfully processed RSS: {url}")
@@ -112,10 +211,11 @@ def get_rss(request):
             {
                 "link": entry[1],
                 "source": entry[2],
-                "title": entry[3],
-                "description": entry[4],
-                "pubDate": entry[5],
-                "enclosure": entry[6],
+                "author": entry[3],
+                "title": entry[4],
+                "description": entry[5],
+                "pubDate": entry[6],
+                "enclosure": entry[7],
             }
         )
 
@@ -144,10 +244,11 @@ def get_author(request):
             {
                 "rss": entry[1],
                 "avatar": entry[2],
-                "link": entry[3],
-                "title": entry[4],
-                "description": entry[5],
-                "pubDate": entry[6],
+                "author": entry[3],
+                "link": entry[4],
+                "title": entry[5],
+                "description": entry[6],
+                "pubDate": entry[7],
             }
         )
 

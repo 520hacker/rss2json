@@ -21,6 +21,7 @@ class RSSDatabase:
             """CREATE TABLE IF NOT EXISTS rss
                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
                      link TEXT UNIQUE,
+                     author TEXT,
                      source TEXT,
                      title TEXT,
                      description TEXT,
@@ -32,6 +33,7 @@ class RSSDatabase:
                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
                      rss TEXT UNIQUE,
                      avatar TEXT,
+                     author TEXT,
                      link TEXT,
                      title TEXT,
                      description TEXT,
@@ -45,19 +47,19 @@ class RSSDatabase:
         )
         self.conn.commit()
 
-    def save_rss_to_db(self, link, source, title, description, pubDate, enclosure):
+    def save_rss_to_db(self, link, author, source, title, description, pubDate, enclosure):
         self.connect()
         self.c.execute("SELECT * FROM rss WHERE link=?", (link,))
         existing_entry = self.c.fetchone()
         if existing_entry:
             return
         self.c.execute(
-            "INSERT INTO rss (link, source, title, description, pubDate, enclosure) VALUES (?, ?, ?, ?, ?, ?)",
-            (link, source, title, description, pubDate, enclosure),
+            "INSERT INTO rss (link, author, source, title, description, pubDate, enclosure) VALUES (?,?, ?, ?, ?, ?, ?)",
+            (link, author, source, title, description, pubDate, enclosure),
         )
         self.conn.commit()
 
-    def save_source_to_db(self, rss, avatar, link, title, description, pubDate):
+    def save_source_to_db(self, rss, avatar, author, link, title, description, pubDate):
         self.connect()
         self.c.execute("SELECT * FROM source WHERE rss=?", (rss,))
         existing_entry = self.c.fetchone()
@@ -66,8 +68,8 @@ class RSSDatabase:
                 self.c.execute("UPDATE source SET avatar=? WHERE rss=?", (avatar, rss))
         else:
             self.c.execute(
-                "INSERT INTO source (rss, avatar, link, title, description, pubDate) VALUES (?, ?, ?, ?, ?, ?)",
-                (rss, avatar, link, title, description, pubDate),
+                "INSERT INTO source (rss, avatar, author,link, title, description, pubDate) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (rss, avatar, author, link, title, description, pubDate),
             )
         self.conn.commit()
 
