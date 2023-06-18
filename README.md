@@ -40,6 +40,7 @@ python app.py --admin_key password
   - page 数字，默认值1
   - per_page 数字，默认值50
   - search 搜索关键字
+  - source 依据来源rss地址进行筛选
 - /log GET，返回收集行为的日志的json数据
   - page 数字，默认值1
   - per_page 数字，默认值50
@@ -48,6 +49,7 @@ python app.py --admin_key password
   - per_page 数字，默认值50
 - /new GET，添加新的RSS地址
   - url 要添加的rss的网址
+  - avatar 要添加的rss的用户头像，可以不传
   - key 你启动的时候指定的秘钥
 - /remove GET，删除已经有的RSS地址
   - url 要删除的rss的网址
@@ -137,6 +139,7 @@ python app.py --admin_key password
   - page number, default 1
   - per_page number, default 50
   - search search keyword
+  - source filter by rss address
 - /log GET, returns the collected logs data in JSON format
   - page number, default 1
   - per_page number, default 50
@@ -145,6 +148,7 @@ python app.py --admin_key password
   - per_page number, default 50
 - /new GET, adds a new RSS address
   - url the URL of the RSS to be added
+  - avatar optional, the avatar for rss author
   - key the admin key specified when starting the program
 - /remove GET, removes an existing RSS address
   - url the URL of the RSS to be removed
