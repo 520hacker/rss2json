@@ -4,6 +4,8 @@
 
 这个需求是来自于使用了MEMOS之后，有互相关注且订阅RSS作为广场的需求。本程序是为类似RSS广场之类的应用程序提供API支持的，其功能是将更新到的RSS转换为json返回出来。
 
+![](https://memosfile.qiangtu.com/picgo/assets/2023/06/18202306_18014611.png)
+
 PS:本程序主要代码由GPT创建, 有bug是正常的，反馈请联系https://t.me/Odinluo。
 
 ----
