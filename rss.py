@@ -44,11 +44,11 @@ def rss_to_avatar_url(url):
 def fetch_json_logo(url):
     try:
         url = rss_to_avatar_url(url)
-        response = requests.get(url + "/api/status")
+        response = requests.get(url)
         response.raise_for_status()  # 检查响应状态码，如果不是200会抛出异常
         data = response.json()
         avatar = data["data"]["customizedProfile"]["logoUrl"]
-        print(f"Successfully processed Avatar API: {url + '/api/status'}")
+        print(f"Successfully processed Avatar API: {url}")
         if avatar.startswith("/"):
             avatar = url + avatar
         return avatar
