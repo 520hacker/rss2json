@@ -29,8 +29,21 @@ def rss_to_memo_url(url):
         return None
 
 
+def rss_to_avatar_url(url):
+    # 匹配 {prefix}/u/{id}/rss.xml
+    pattern = r"^(.*)/u/(\d+)/rss\.xml$"
+    match = re.match(pattern, url)
+    if match:
+        prefix = match.group(1)
+        memo_url = f"{prefix}/api/status"
+        return memo_url
+    else:
+        return None
+
+
 def fetch_json_logo(url):
     try:
+        url = rss_to_avatar_url(url)
         response = requests.get(url + "/api/status")
         response.raise_for_status()  # 检查响应状态码，如果不是200会抛出异常
         data = response.json()
@@ -49,6 +62,7 @@ def fetch_json_logo(url):
 
 def fetch_json_updates(url):
     try:
+        url = rss_to_memo_url(url)
         # 发起GET请求获取API接口返回的JSON数据
         response = requests.get(url)
         if response.status_code == 200:
@@ -123,12 +137,11 @@ def process_rss(url, rss_item):
 
             try:
                 if type == "1":
-                    feeds_url = rss_to_memo_url(url)
-                    feeds_json = fetch_json_updates(feeds_url)
+                    feeds_json = fetch_json_updates(url)
                     author = get_author_json(feeds_json)
                     if avatar == "":
-                        avatar = fetch_json_logo(channel_link)
-                        
+                        avatar = fetch_json_logo(url)
+
             except Exception as ex:
                 print(f"获取json feeds发生了错误${ex}")
                 pass
