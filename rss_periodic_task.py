@@ -1,12 +1,9 @@
 import time
 import threading
-from rss import process_all_rss
+from rss_main import process_all_rss
 
-lockObject = threading.Lock() 
+lockObject = threading.Lock()
 
-# def start_periodic_task():
-#     thread = threading.Thread(target=periodic_task)
-#     thread.start()
 
 # 定时执行遍历任务
 def periodic_task():
@@ -18,6 +15,3 @@ def periodic_task():
             lockObject.release()
             print("Periodic task completed")
         time.sleep(300)
-
-# thread = threading.Thread(target=periodic_task)
-# thread.start()
