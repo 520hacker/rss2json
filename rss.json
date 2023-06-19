@@ -111,11 +111,6 @@
     },
     {
         "type": "1",
-        "rss": "https://memos.dejavu.moe/u/1/rss.xml",
-        "avatar": ""
-    },
-    {
-        "type": "1",
         "rss": "https://memos.dongjunke.cn/u/1/rss.xml",
         "avatar": "https://pic.yunshusong.cn/upic/20230204122856.jpg"
     },
@@ -131,7 +126,7 @@
     },
     {
         "type": "1",
-        "rss": "https://memos.wiki-power.com/u/1/rss.xml",
+        "rss": "http://memos.wiki-power.com/u/1/rss.xml",
         "avatar": ""
     },
     {
@@ -157,7 +152,7 @@
     {
         "type": "1",
         "rss": "https://memos.ee/u/1/rss.xml",
-        "avatar": ""
+        "avatar": "https://memos.ee/o/r/26/8b987c36-3f2b-4fba-ae7d-4b42e209474d/logo.png"
     },
     {
         "type": "1",
@@ -186,11 +181,6 @@
     },
     {
         "type": "1",
-        "rss": "https://note.l22.org/u/1/rss.xml",
-        "avatar": ""
-    },
-    {
-        "type": "1",
         "rss": "https://note.zdm.im/u/1/rss.xml",
         "avatar": ""
     },
@@ -212,21 +202,11 @@
     {
         "type": "1",
         "rss": "https://bb.seersu.top/u/101/rss.xml",
-        "avatar": ""
-    },
-    {
-        "type": "1",
-        "rss": "https://www.forevers.love/u/1/rss.xml",
-        "avatar": ""
+        "avatar": "https://seersu.me/img/logo.svg"
     },
     {
         "type": "1",
         "rss": "https://mybelife.com/u/1/rss.xml",
-        "avatar": ""
-    },
-    {
-        "type": "1",
-        "rss": "https://memos.qiangtu.com/u/1/rss.xml",
         "avatar": ""
     },
     {

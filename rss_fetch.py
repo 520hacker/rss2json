@@ -20,11 +20,12 @@ def fetch_json_logo(url):
         response.raise_for_status()  # 检查响应状态码，如果不是200会抛出异常
         data = response.json()
         avatar = data["data"]["customizedProfile"]["logoUrl"]
-        print(f"Successfully processed Avatar API: {url}")
+        print(f"Successfully processed Avatar API: {asset_url}")
         if avatar.startswith("/"):
             avatar = url + avatar
             
-        update_logo_to_json(url, avatar)
+        if avatar != '':
+            update_logo_to_json(url, avatar)
         return avatar
     except requests.exceptions.RequestException as ex:
         print(f"Request failed: {ex}")

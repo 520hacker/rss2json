@@ -1,5 +1,14 @@
 import re
 
+def rss_to_channel_url(url):
+    # 匹配 {prefix}/u/{id}/rss.xml
+    pattern = r"^(.*)/u/(\d+)/rss\.xml$"
+    match = re.match(pattern, url)
+    if match:
+        return match.group(1)
+    else:
+        return None
+
 
 def rss_to_memo_url(url):
     # 匹配 {prefix}/u/{id}/rss.xml

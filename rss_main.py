@@ -6,9 +6,10 @@ from rss_db import RSSDatabase, get_timestamp
 from rss_json import read_rss_list
 from rss_fetch import fetch_json_logo, fetch_json_updates
 from rss_db_log import db_log_info
+from rss_url import rss_to_channel_url
 
 
-def get_resource_json(item_url, base_url, feeds_json):
+def get_resource_json(item_url, site_url, base_url, feeds_json):
     try:
         for entry in feeds_json:
             new_url = base_url + "/m/" + str(entry["id"])
@@ -16,8 +17,11 @@ def get_resource_json(item_url, base_url, feeds_json):
                 images = entry["resourceList"]
                 new_image_list = []
                 for image in json.loads(images):
+                    new_image_url = image["externalLink"]
+                    if base_url != site_url:
+                        new_image_url = new_image_url.replace(base_url, site_url)
                     new_image_list.append(
-                        {"type": image["type"], "href": image["externalLink"]}
+                        {"type": image["type"], "href": new_image_url}
                     )
                 return new_image_list
         return []
@@ -46,6 +50,7 @@ def process_rss(url, rss_item):
             channel = rss_feed["feed"]
             title = channel["title"]
             channel_link = channel["link"]
+            site_url = rss_to_channel_url(url)
             description = channel["description"]
             pubDate = channel["published"]
 
@@ -68,7 +73,7 @@ def process_rss(url, rss_item):
                 url,
                 avatar,
                 author,
-                channel_link,
+                site_url,
                 title,
                 description,
                 get_timestamp(pubDate),
@@ -82,7 +87,9 @@ def process_rss(url, rss_item):
                 enclosure = ""
 
                 try:
-                    new_image_list = get_resource_json(link, channel_link, feeds_json)
+                    new_image_list = get_resource_json(
+                        link, site_url, channel_link, feeds_json
+                    )
                     if isinstance(new_image_list, list) and len(new_image_list) > 0:
                         filtered_links = new_image_list
                     else:
@@ -113,5 +120,4 @@ def process_rss(url, rss_item):
 def process_all_rss():
     rss_list = read_rss_list()
     for rss_item in rss_list:
-        url = rss_item["rss"]
-        process_rss(url, rss_item)
+        process_rss(rss_item["rss"], rss_item)
