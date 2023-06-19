@@ -105,7 +105,7 @@ def process_rss(url, rss_item):
 
                 pubDate_timestamp = get_timestamp(pubDate)
                 rss_db.save_rss_to_db(
-                    link, url, author, title, description, pubDate_timestamp, enclosure
+                    link, author, url, title, description, pubDate_timestamp, enclosure
                 )
 
             rss_db.close()

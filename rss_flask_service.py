@@ -19,8 +19,8 @@ def get_rss(request):
         rss_list.append(
             {
                 "link": entry[1],
-                "source": entry[2],
-                "author": entry[3],
+                "author": entry[2],
+                "source": entry[3],
                 "title": entry[4],
                 "description": entry[5],
                 "pubDate": entry[6],
