@@ -29,7 +29,25 @@ def rss_to_memo_url(url):
         return None
 
 
-def fetch_json(url):
+def fetch_json_logo(url):
+    try:
+        response = requests.get(url + "/api/status")
+        response.raise_for_status()  # 检查响应状态码，如果不是200会抛出异常
+        data = response.json()
+        avatar = data["data"]["customizedProfile"]["logoUrl"]
+        print(f"Successfully processed Avatar API: {url + '/api/status'}")
+        if avatar.startswith("/"):
+            avatar = url + avatar
+        return avatar
+    except requests.exceptions.RequestException as ex:
+        print(f"Request failed: {ex}")
+        raise  # 抛出异常以便更好地处理错误
+    except Exception as ex:
+        print(f"An error occurred: {ex}")
+        raise  # 抛出异常以便更好地处理错误
+
+
+def fetch_json_updates(url):
     try:
         # 发起GET请求获取API接口返回的JSON数据
         response = requests.get(url)
@@ -48,8 +66,6 @@ def fetch_json(url):
                 result.append(
                     {
                         "id": item["id"],
-                        # "updatedTs": item["updatedTs"],
-                        # "content": content_html,
                         "creatorName": item["creatorName"],
                         "resourceList": resource_list,
                     }
@@ -93,26 +109,33 @@ def process_rss(url, rss_item):
         if response.status_code == 200:
             rss_content = response.text
             rss_feed = feedparser.parse(rss_content)
-
+            type = rss_item["type"]
             avatar = rss_item["avatar"]
-
+            author = ""
             feeds_url = ""
             feeds_json = None
 
-            try:
-                if rss_item["type"] == "1":
-                    feeds_url = rss_to_memo_url(url)
-                    feeds_json = fetch_json(feeds_url)
-            except Exception as ex:
-                print(f"获取json feeds发生了错误${ex}")
-                pass
-
-            author = get_author_json(feeds_json)
             channel = rss_feed["feed"]
             title = channel["title"]
             channel_link = channel["link"]
             description = channel["description"]
             pubDate = channel["published"]
+
+            try:
+                if type == "1":
+                    feeds_url = rss_to_memo_url(url)
+                    feeds_json = fetch_json_updates(feeds_url)
+                    author = get_author_json(feeds_json)
+                    if avatar == "":
+                        avatar = fetch_json_logo(channel_link)
+                        
+            except Exception as ex:
+                print(f"获取json feeds发生了错误${ex}")
+                pass
+
+            if avatar == "":
+                avatar = "https://memosfile.qiangtu.com/picgo/assets/2023/06/18202306_18110103.png?x-oss-process=image/resize,h_50,w_50"
+
             rss_db = RSSDatabase()
             rss_db.save_source_to_db(
                 url,
@@ -179,21 +202,9 @@ def process_rss(url, rss_item):
 
 def process_all_rss():
     rss_list = read_rss_list()
-    # threads = []
     for rss_item in rss_list:
         url = rss_item["rss"]
-        # t = threading.Thread(
-        #     target=process_rss,
-        #     args=(
-        #         url,
-        #         rss_item,
-        #     ),
-        # )
-        # threads.append(t)
-        # t.start()
         process_rss(url, rss_item)
-    # for t in threads:
-    #     t.join()
 
 
 def get_rss(request):

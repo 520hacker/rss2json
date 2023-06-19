@@ -1,0 +1,1 @@
+docker build -t odinluo/rss2json .
