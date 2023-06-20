@@ -11,6 +11,8 @@ from rss_url import rss_to_channel_url
 
 def get_resource_json(item_url, site_url, base_url, feeds_json):
     try:
+        if feeds_json is None:
+            feeds_json = []  # 或者根据需求设置一个空列表或其他默认值
         for entry in feeds_json:
             new_url = base_url + "/m/" + str(entry["id"])
             if item_url == new_url:
