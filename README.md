@@ -6,7 +6,7 @@
 
 ![](https://memosfile.qiangtu.com/picgo/assets/2023/06/18202306_18014611.png)
 
-PS:本程序主要代码由GPT创建, 有bug是正常的，反馈请联系https://t.me/Odinluo。
+PS:本程序主要代码由GPT创建, 有bug是正常的，反馈请联系https://t.me/Odinluo
 
 ----
 
