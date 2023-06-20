@@ -99,6 +99,10 @@ docker run -e ADMIN_KEY=<your_admin_key> -p 5005:5005 rss2json
 
 ### 最近更新
 
+2023/06/20
+
+- 添加了一个10秒超时
+
 2023/06/19
 
 - 按照功能对Py文件进行了分割，主要是chatGPT也读不了太大的文件。

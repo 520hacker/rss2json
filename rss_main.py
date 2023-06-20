@@ -4,7 +4,7 @@ import feedparser
 
 from rss_db import RSSDatabase, get_timestamp
 from rss_json import read_rss_list
-from rss_fetch import fetch_json_logo, fetch_json_updates
+from rss_fetch import fetch_json_logo, fetch_json_updates, fetch_rss_content
 from rss_db_log import db_log_info
 from rss_url import rss_to_channel_url
 
@@ -39,10 +39,9 @@ def get_author_json(feeds_json):
 
 
 def process_rss(url, rss_item):
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            rss_content = response.text
+    try: 
+        rss_content = fetch_rss_content(url)
+        if rss_content != None: 
             rss_feed = feedparser.parse(rss_content)
             type = rss_item["type"]
             avatar = rss_item["avatar"]
@@ -122,4 +121,8 @@ def process_rss(url, rss_item):
 def process_all_rss():
     rss_list = read_rss_list()
     for rss_item in rss_list:
-        process_rss(rss_item["rss"], rss_item)
+        try:
+            process_rss(rss_item["rss"], rss_item)
+        except Exception as ex:
+            db_log_info(f"Error process_rss: {rss_item['rss']}, {str(ex)}")
+
