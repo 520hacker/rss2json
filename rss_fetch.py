@@ -1,18 +1,9 @@
 import requests
 import json
 from rss_url import rss_to_memo_url, rss_to_avatar_url
-from rss_json import read_rss_list, write_rss_list
+from rss_json import update_logo_to_json
 
 time_out_seconds = 10
-
-
-def update_logo_to_json(url, avatar):
-    rss_list = read_rss_list()
-    for rss_item in rss_list:
-        if rss_item["rss"] == url:
-            rss_item["avatar"] = avatar
-            write_rss_list(rss_list)
-            break
 
 
 def fetch_rss_content(url):

@@ -1,6 +1,7 @@
 import json
 
-def unique(a):
+
+def unique_rss_address(a):
     # 创建一个集合用于存储已经出现过的rss值
     seen_rss = set()
     # 创建一个新的列表用于存储去重后的元素
@@ -19,8 +20,18 @@ def unique(a):
 def read_rss_list():
     with open("rss.json", "r") as file:
         rss_list = json.load(file)
-    return unique(rss_list)
+    return unique_rss_address(rss_list)
+
 
 def write_rss_list(rss_list):
     with open("rss.json", "w") as file:
         json.dump(rss_list, file)
+
+
+def update_logo_to_json(url, avatar):
+    rss_list = read_rss_list()
+    for rss_item in rss_list:
+        if rss_item["rss"] == url:
+            rss_item["avatar"] = avatar
+            write_rss_list(rss_list)
+            break

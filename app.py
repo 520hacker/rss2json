@@ -14,5 +14,5 @@ if __name__ == "__main__":
 
     # 启动线程
     thread.start()
+    # 启动WEB
     app.run(host="0.0.0.0", port=5005)
-    # 启动线程
